@@ -195,8 +195,6 @@ object TestQC {
       val circuitSize: Int = 4
       def snippet(s: Rep[Int]): Rep[Unit] = runCircuit(simon, State(circuitSize))
     }
-    //QASMTranslator.emit(rand16)
-    //println(snippet.code)
     snippet.eval(0)
   }
 }
