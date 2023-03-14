@@ -103,6 +103,8 @@ trait QCK extends QCState {
 
 abstract class QCDriver[A: Manifest, B: Manifest] extends DslDriverCPP[A, B] { q =>
   val circuitSize: Int
+  val repeat: Int = 1
+
   override val compilerCommand = "g++ -std=c++20 -O3"
   override val sourceFile = "snippet.cpp"
   override val executable = "./snippet"
@@ -112,12 +114,14 @@ abstract class QCDriver[A: Manifest, B: Manifest] extends DslDriverCPP[A, B] { q
     registerHeader("<map>")
     registerHeader("<cmath>")
     registerHeader("<iostream>")
+    registerHeader("<chrono>")
 
     // TODO: consider using std::bitset
     // TODO: instead of using a map as summary, we could allocate
     // an array of 2^n elements to store the prob amplitudes of each
     // possible states.
     lazy val prelude: String = s"""
+    |using namespace std::chrono;
     |typedef std::array<bool, $circuitSize> Bits;
     |typedef struct State { double d; Bits bs; } State;
     |Bits bits_set(const Bits& bs, size_t i, bool v) { Bits res = bs; res[i] = v; return res; }
@@ -179,7 +183,13 @@ abstract class QCDriver[A: Manifest, B: Manifest] extends DslDriverCPP[A, B] { q
       emit(src)
       emitln(s"""
       |int main(int argc, char *argv[]) {
-      |  $name(0);
+      |  auto start = high_resolution_clock::now();
+      |  for (size_t i = 0; i < $repeat; i++) { summary.clear(); $name(0); }
+      |  auto end = high_resolution_clock::now();
+      |  auto duration = duration_cast<microseconds>(end - start);
+      |  std::cout << std::fixed;
+      |  std::cout << "time: ";
+      |  std::cout << (duration_cast<microseconds>(duration).count() / 1.0e6) << "s\\n";
       |  print_summary();
       |  return 0;
       |}""".stripMargin)
@@ -193,6 +203,7 @@ object TestQC {
   def main(args: Array[String]): Unit = {
     val snippet = new QCDriver[Int, Unit] with QCK {
       val circuitSize: Int = 4
+      override val repeat: Int = 1000
       def snippet(s: Rep[Int]): Rep[Unit] = runCircuit(simon, State(circuitSize))
     }
     snippet.eval(0)
