@@ -7,11 +7,11 @@ by classical computation and produces all possible final states
 and their probability amplitudes.
 
 - The repository contains an evaluator written in Scala using `shift`/`reset`,
-following the [Quantum Continuation](https://andykeep.com/SchemeWorkshop2022/scheme2022-final37.pdf) paper. See [QuantumCont.scala](https://github.com/Kraks/quantum-compiler/blob/main/src/main/scala/QuantumCont.scala)
+following the [Quantum Continuation](https://andykeep.com/SchemeWorkshop2022/scheme2022-final37.pdf) paper. See [QContSim1.scala](https://github.com/Kraks/quantum-compiler/blob/main/src/main/scala/QContSim1.scala)
 - The compiler (or, the staged evalutor) is written in CPS (instead of using control operators) and is
 implemented with [Lightweight Modular
 Staging](https://github.com/TiarkRompf/lms-clean).
-See [QCompCPS.scala](https://github.com/Kraks/quantum-compiler/blob/main/src/main/scala/QCompCPS.scala).
+See [QCompilerCPS.scala](https://github.com/Kraks/quantum-compiler/blob/main/src/main/scala/QCompilerCPS.scala).
 
 
 ## Example

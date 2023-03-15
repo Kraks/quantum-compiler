@@ -5,28 +5,11 @@ package quantum
 
 import scala.util.continuations._
 import Syntax._
+import EvalState._
 
 object QuantumContSim {
-  case class State(d: Double, bs: Vector[Boolean]) {
-    def toMap: Map[Vector[Boolean], Double] = Map(bs -> d)
-  }
-  object State {
-    def apply(i: Int): State = State(1.0, Vector.fill(i)(false))
-  }
-
   // Accumulate states and their probability amplitudes
   type Ans = Map[Vector[Boolean], Double]
-
-  val hscale: Double = 1.0 / math.sqrt(2.0)
-
-  def isSet(bs: Vector[Boolean], x: Exp): Boolean = x match {
-    case Wire(pos) => bs(pos)
-    case Bit(b) => b
-  }
-
-  def neg(bs: Vector[Boolean], x: Exp): Vector[Boolean] = x match {
-    case Wire(pos) => bs.updated(pos, !bs(pos))
-  }
 
   def collect(x: State, y: State): State @cps[Ans] = shift { k =>
     val a = k(x)
@@ -49,26 +32,30 @@ object QuantumContSim {
 
   def runCircuit(c: Circuit, v: State): Ans = reset { evalCircuit(c, v).toMap }
 
-  def prettyPrint(m: Ans): Unit = {
-    m.filter(kv => math.abs(kv._2) > 0.001).foreach { case (k, v) =>
-      val p = (if (v > 0) "+" else "") + f"$v%.3f"
-      val vs = k.map(x => if (x) "1" else "0").mkString
-      print(s"$p|$vs⟩ ")
-    }
-  }
+}
+
+object TestQContSim {
+  import QuantumContSim._
 
   def main(args: Array[String]): Unit = {
     import Examples._
-    val N = 0
-    val (_, t) = Utils.time {
+    val N = 10000
+    val (_, t1) = Utils.time {
       for (i <- 0 to N) {
-        //prettyPrint(runCircuit(simon, State(4)))
-        prettyPrint(runCircuit(DeutschJozsa, State(2)))
-        println()
+        QuantumContSim.runCircuit(simon, State(4))
+        //prettyPrint(QuantumContSim.runCircuit(simon, State(4)))
+        //println()
       }
     }
-    //println(s"$t sec")
+    val (_, t2) = Utils.time {
+      for (i <- 0 to N) {
+        QuantumEvalCPS.runCircuit(simon, State(4))
+        //prettyPrint(QuantumEvalCPS.summary.toMap)
+        //println()
+      }
+    }
+    println(s"$t1 sec; $t2 sec")
   }
-}
 
+}
 

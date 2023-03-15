@@ -68,7 +68,7 @@ trait QCState extends Dsl {
 }
 
 @virtualize
-trait QCK extends QCState {
+trait QCompilerCPS extends QCState {
   type Ans = Unit
 
   val genCircuitInfo = true
@@ -81,6 +81,7 @@ trait QCK extends QCState {
   def evalGate(g: Gate, v: Rep[State], k: Rep[State] => Rep[Ans]): Rep[Ans] = {
     info(s"// $g")
     val repK: Rep[State => Ans] = topFun(k)
+    //val repK: Rep[State => Ans] = Wrap[State => Ans](__topFun(k, 1, xn => Unwrap(k(Wrap[State](xn(0)))), "inline"))
     g match {
       case CCX(x, y, z) =>
         if (isSet(v.bs, x) && isSet(v.bs, y)) repK(State(v.d, neg(v.bs, z))) else repK(v)
@@ -201,10 +202,10 @@ object TestQC {
   import Examples._
 
   def main(args: Array[String]): Unit = {
-    val snippet = new QCDriver[Int, Unit] with QCK {
-      val circuitSize: Int = 4
-      override val repeat: Int = 1000
-      def snippet(s: Rep[Int]): Rep[Unit] = runCircuit(simon, State(circuitSize))
+    val snippet = new QCDriver[Int, Unit] with QCompilerCPS {
+      val circuitSize: Int = 16
+      override val repeat: Int = 1
+      def snippet(s: Rep[Int]): Rep[Unit] = runCircuit(rand16, State(circuitSize))
     }
     snippet.eval(0)
   }
