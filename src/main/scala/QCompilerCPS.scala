@@ -100,6 +100,7 @@ trait QCompilerCPS extends QCState {
     if (c.isEmpty) k(v) else evalGate(c.head, v, s => evalCircuit(c.tail, s, k))
 
   def runCircuit(c: Circuit, v: Rep[State]): Rep[Ans] = evalCircuit(c, v, summarize)
+
 }
 
 abstract class QCDriver[A: Manifest, B: Manifest] extends DslDriverCPP[A, B] { q =>
@@ -210,3 +211,4 @@ object TestQC {
     snippet.eval(0)
   }
 }
+
