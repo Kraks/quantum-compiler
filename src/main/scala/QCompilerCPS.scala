@@ -204,9 +204,9 @@ object TestQC {
 
   def main(args: Array[String]): Unit = {
     val snippet = new QCDriver[Int, Unit] with QCompilerCPS {
-      val circuitSize: Int = 16
+      val circuitSize: Int = 4
       override val repeat: Int = 1
-      def snippet(s: Rep[Int]): Rep[Unit] = runCircuit(rand16, State(circuitSize))
+      def snippet(s: Rep[Int]): Rep[Unit] = runCircuit(simon, State(circuitSize))
     }
     snippet.eval(0)
   }
