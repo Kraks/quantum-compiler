@@ -131,7 +131,7 @@ class QState(var state: Matrix, size: Int) {
     //println(pow(2, size - i - g.arity).toInt)
     val iRight = Matrix.identity(pow(2, size - i - g.arity).toInt)
     //println(iRight.pPrint)
-    state = ((iLeft ⊗ g.m) ⊗ iRight) * state
+    state = iLeft ⊗ g.m ⊗ iRight * state
   }
   def H(i: Int): Unit = op(Gate.H, i)
   def CNOT(i: Int): Unit = op(Gate.CNOT, i)
