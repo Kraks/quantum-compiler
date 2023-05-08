@@ -35,11 +35,7 @@ object Matrix {
     }
     result
   }
-  def zerosVec(n: Int): Array[Complex] = {
-    val result = Array.ofDim[Complex](n)
-    for (i <- 0 until n) result(i) = 0
-    result
-  }
+  def zerosVec(n: Int): Array[Complex] = Array.fill(n)(0)
 
   def prettyPrint(A: Matrix): String = {
     val sb = new StringBuilder
@@ -78,6 +74,7 @@ object Matrix {
           result(i * nRowsB + k)(j * nColsB + l) = A(i)(j) * B(k)(l)
         }
       }
+      //println(s"${A.dim} ⊗ ${B.dim} = ${result.dim}")
       result
     }
     // Matrix multiplication
@@ -97,8 +94,24 @@ object Matrix {
           result(i)(j) = sum
         }
       }
+      //println(s"${A.dim} * ${B.dim} = ${result.dim}")
       result
     }
+    // Matrix-vector product
+    def *(V: Array[Complex]): Array[Complex] = {
+      val nRowsA = A.size
+      val nColsA = A(0).size
+      require(nColsA == V.size, s"dimension error")
+      val result = zerosVec(nRowsA)
+      for (i <- 0 until nRowsA) {
+        for (j <- 0 until nColsA) {
+          result(i) += A(i)(j) * V(j)
+        }
+      }
+      //println(s"${A.dim} * ${V.size} = ${result.size}")
+      result
+    }
+    def dim: (Int, Int) = (A.size, A(0).size)
   }
 }
 
@@ -138,7 +151,7 @@ object Gate {
     ))
 }
 
-class QState(var state: Matrix, size: Int) {
+class QState(var state: Array[Complex], size: Int) {
   def op(g: Gate, i: Int) = {
     //println(pow(2, i).toInt)
     val iLeft = Matrix.identity(pow(2, i).toInt)
@@ -158,7 +171,7 @@ class QState(var state: Matrix, size: Int) {
 object QState {
   def apply(n: Int): QState = {
     val s = Matrix.zerosVec(pow(n, 2).toInt)
-    s(0) = 1
-    new QState(s.map(Array(_)), n)
+    s(0) = 1 // all deterministically zero
+    new QState(s, n)
   }
 }
