@@ -114,12 +114,27 @@ object Gate {
       Array(isq2, isq2),
       Array(isq2, -isq2)
     ))
+  val NOT = Gate("NOT",
+    Array(
+      Array(0, 1),
+      Array(1, 0)
+    ))
   val CNOT = Gate("CNOT", 
     Array(
       Array(1, 0, 0, 0),
       Array(0, 1, 0, 0),
       Array(0, 0, 0, 1),
       Array(0, 0, 1, 0),
+    ))
+  val S = Gate("S",
+    Array(
+      Array(1, 0),
+      Array(0, Complex(0, 1))
+    ))
+  val T = Gate("T",
+    Array(
+      Array(1, 0),
+      Array(0, isq2 + isq2 * Complex(0, 1))
     ))
 }
 
@@ -134,7 +149,10 @@ class QState(var state: Matrix, size: Int) {
     state = iLeft ⊗ g.m ⊗ iRight * state
   }
   def H(i: Int): Unit = op(Gate.H, i)
+  def NOT(i: Int): Unit = op(Gate.NOT, i)
   def CNOT(i: Int): Unit = op(Gate.CNOT, i)
+  def S(i: Int): Unit = op(Gate.S, i)
+  def T(i: Int): Unit = op(Gate.T, i)
 }
 
 object QState {
