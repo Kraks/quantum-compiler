@@ -58,6 +58,14 @@ object Shonan {
       registerHeader("<chrono>")
       lazy val prelude = """
       |using namespace std::chrono;
+      |void printArray(int arr[], int size) {
+      |  printf("[");
+      |  for (int i = 0; i < size; i++) {
+      |    printf("%d", arr[i]);
+      |    if (i < size - 1) { printf(", "); }
+      |  }
+      |  printf("]\n");
+      |}
       """.stripMargin
       override def emitAll(g: Graph, name: String)(m1:Manifest[_],m2:Manifest[_]): Unit = {
         val ng = init(g)
@@ -79,6 +87,7 @@ object Shonan {
         |  auto start = high_resolution_clock::now();
         |  int* output = $name(input);
         |  auto end = high_resolution_clock::now();
+        |  printArray(output, 5);
         |  auto duration = duration_cast<microseconds>(end - start);
         |  std::cout << std::fixed;
         |  std::cout << "time: ";
@@ -115,6 +124,7 @@ object Shonan {
 
   def main(args: Array[String]): Unit = {
     println(snippet.code)
+    snippet.eval(Array(1,2,3,4,5))
     //assert(snippet.eval(Array(1,2,3,4,5)).toList == List(15, 0, 3, 0, 8))
   }
 }
