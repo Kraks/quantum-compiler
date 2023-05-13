@@ -127,11 +127,22 @@ class StagedSchrodinger(c: Circuit, size: Int) extends DslDriverCPP[Array[Double
     |  double* input = (double*)malloc(${pow(size, 2)} * sizeof(double));
     |  input[0] = 1;
     |""".stripMargin
-    override val procOutput: String = s"";
+    override val procOutput: String = s"printArray(input, ${pow(size, 2)});";
     override lazy val prelude = """
     |using namespace std::chrono;
+    |void printArray(double arr[], int size) {
+    |  printf("[");
+    |  for (int i = 0; i < size; i++) {
+    |    printf("%f", arr[i]);
+    |    if (i < size - 1) { printf(", "); }
+    |  }
+    |  printf("]\n");
+    |}
     """.stripMargin
   }
+  override val compilerCommand = "g++ -std=c++20 -O3"
+  override val sourceFile = "snippet.cpp"
+  override val executable = "./snippet"
 
   def unrollIf(c: Boolean, r: Range) = new {
     def foreach(f: Rep[Int] => Rep[Unit]) = {
@@ -145,7 +156,7 @@ class StagedSchrodinger(c: Circuit, size: Int) extends DslDriverCPP[Array[Double
     val a = staticData(a0)
     for (i <- (0 until n): Range) {
       des(i) = 0.0
-      val sparse = a0(i).count(_ != 0) < 3
+      val sparse = a0(i).count(_ != 0) < 0.5 * a0(i).size
       for (j <- unrollIf(sparse, 0 until n)) {
         des(i) = des(i) + a(i).apply(j) * v(j)
       }
@@ -156,7 +167,7 @@ class StagedSchrodinger(c: Circuit, size: Int) extends DslDriverCPP[Array[Double
     val iLeft = Matrix.identity(pow(2, i).toInt)
     val iRight = Matrix.identity(pow(2, size - i - g.arity).toInt)
     matVecProd(iLeft ⊗ g.m ⊗ iRight, state, des)
-    new ArrayOps(des).copyToArray(state, 0, pow(size, 2).toInt * 4)
+    new ArrayOps(des).copyToArray(state, 0, pow(size, 2).toInt * 8)
   }
 
   def snippet(input: Rep[Array[Double]]): Rep[Unit] = {
@@ -171,5 +182,6 @@ object TestStagedSchrodinger {
   def main(args: Array[String]): Unit = {
     val driver = new StagedSchrodinger(List(), 2)
     println(driver.code)
+    driver.eval(Array())
   }
 }
