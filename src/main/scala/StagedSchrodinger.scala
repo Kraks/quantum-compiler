@@ -157,7 +157,7 @@ class StagedSchrodinger(c: Circuit, size: Int) extends DslDriverCPP[Array[Double
     for (i <- (0 until n): Range) {
       des(i) = 0.0
       val sparse = a0(i).count(_ != 0) < 0.5 * a0(i).size
-      for (j <- unrollIf(sparse, 0 until n)) {
+      for (j <- unrollIf(sparse, 0 until a0(0).size)) {
         des(i) = des(i) + a(i).apply(j) * v(j)
       }
     }
@@ -167,7 +167,7 @@ class StagedSchrodinger(c: Circuit, size: Int) extends DslDriverCPP[Array[Double
     val iLeft = Matrix.identity(pow(2, i).toInt)
     val iRight = Matrix.identity(pow(2, size - i - g.arity).toInt)
     matVecProd(iLeft ⊗ g.m ⊗ iRight, state, des)
-    new ArrayOps(des).copyToArray(state, 0, pow(size, 2).toInt * 8)
+    des.copyToArray(state, 0, pow(size, 2).toInt * 8)
   }
 
   def snippet(input: Rep[Array[Double]]): Rep[Unit] = {
