@@ -129,9 +129,19 @@ object Gate {
       Array(0, 0, 0, 1),
       Array(0, 0, 1, 0),
     ))
+  val S = Gate("S",
+    Array(
+      Array(1, 0),
+      Array(0, Complex(0, 1))
+    ))
+  val T = Gate("T",
+    Array(
+      Array(1, 0),
+      Array(0, isq2 + isq2 * Complex(0, 1))
+    ))
 }
 
-class StagedSchrodinger(c: Circuit, size: Int) extends DslDriverCPP[Array[Complex], Unit] with ComplexOps { q =>
+class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[Complex], Unit] with ComplexOps { q =>
   override val codegen = new QCodeGen with CppCodeGen_Complex {
     val IR: q.type = q
     override val initInput: String = s"""
@@ -142,7 +152,7 @@ class StagedSchrodinger(c: Circuit, size: Int) extends DslDriverCPP[Array[Comple
     override lazy val prelude = """
     |using namespace std::chrono;
     |typedef struct Complex { double re; double im; } Complex;
-    |void printComplex(Complex* c) { printf("%f + %fi", c->re, c->im); }
+    |void printComplex(Complex* c) { printf("%.3f + %.3fi", c->re, c->im); }
     |void printArray(Complex arr[], int size) {
     |  printf("[");
     |  for (int i = 0; i < size; i++) {
@@ -196,6 +206,8 @@ class StagedSchrodinger(c: Circuit, size: Int) extends DslDriverCPP[Array[Comple
     val buf = NewArray[Complex](pow(size, 2).toInt)
     op(Gate.H, 0, input, buf)
     op(Gate.CNOT, 0, input, buf)
+    op(Gate.S, 0, input, buf)
+    op(Gate.T, 0, input, buf)
   }
 
 }
