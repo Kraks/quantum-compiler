@@ -160,6 +160,7 @@ class QState(var state: Array[Complex], size: Int) {
     val iRight = Matrix.identity(pow(2, size - i - g.arity).toInt)
     //println(iRight.pPrint)
     state = iLeft ⊗ g.m ⊗ iRight * state
+    // tiling, auto vec
   }
   def H(i: Int): Unit = op(Gate.H, i)
   def NOT(i: Int): Unit = op(Gate.NOT, i)
