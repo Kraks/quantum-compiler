@@ -1,12 +1,12 @@
 package quantum.schrodinger.gate
 
-import math.pow
+import math.{pow, log}
 import quantum.schrodinger.Complex
 import quantum.schrodinger.Complex._
 import quantum.schrodinger.Matrix._
 
 case class Gate(id: String, m: Matrix) {
-  def arity: Int = pow(m.size, 0.5).toInt
+  def arity: Int = (log(m.size) / log(2)).toInt
 }
 
 object Gate {

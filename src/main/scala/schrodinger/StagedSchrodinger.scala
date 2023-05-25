@@ -21,10 +21,10 @@ class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[
   override val codegen = new QCodeGen with CppCodeGen_Complex {
     val IR: q.type = q
     override val initInput: String = s"""
-    |  Complex* input = (Complex*)malloc(${pow(size, 2)} * sizeof(Complex));
+    |  Complex* input = (Complex*)malloc(${pow(2, size)} * sizeof(Complex));
     |  input[0] = {1, 0};
     |""".stripMargin
-    override val procOutput: String = s"printArray(input, ${pow(size, 2)});";
+    override val procOutput: String = s"printArray(input, ${pow(2, size)});";
     override lazy val prelude = """
     |using namespace std::chrono;
     |typedef struct Complex { double re; double im; } Complex;
@@ -75,11 +75,11 @@ class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[
     val iRight = Matrix.identity(pow(2, size - i - g.arity).toInt)
     matVecProd(iLeft ⊗ g.m ⊗ iRight, state, des)
     // XXX: can we eliminate this copy?
-    des.copyToArray(state, 0, pow(size, 2).toInt * sizeof("Complex"))
+    des.copyToArray(state, 0, pow(2, size).toInt * sizeof("Complex"))
   }
 
   def snippet(input: Rep[Array[Complex]]): Rep[Unit] = {
-    val buf = NewArray[Complex](pow(size, 2).toInt)
+    val buf = NewArray[Complex](pow(2, size).toInt)
     op(Gate.H, 0, input, buf)
     op(Gate.CNOT, 0, input, buf)
     op(Gate.S, 0, input, buf)

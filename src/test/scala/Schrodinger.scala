@@ -60,4 +60,24 @@ class SchrodingerTest extends AnyFunSuite {
       )
     )
   }
+
+  test("Toffoli") {
+    var s = QState(3)
+    s.CCNOT(0)
+    assert(checkEq(s.summary, List[(String, Complex)](("000", 1.0))))
+
+    s = QState(3)
+    val b110 = Matrix.zerosVec(pow(2, 3).toInt)
+    b110(6) = 1
+    s.setState(b110)
+    s.CCNOT(0)
+    assert(checkEq(s.summary, List[(String, Complex)](("111", 1.0))))
+
+    s = QState(3)
+    val b111 = Matrix.zerosVec(pow(2, 3).toInt)
+    b111(7) = 1
+    s.setState(b111)
+    s.CCNOT(0)
+    assert(checkEq(s.summary, List[(String, Complex)](("110", 1.0))))
+  }
 }

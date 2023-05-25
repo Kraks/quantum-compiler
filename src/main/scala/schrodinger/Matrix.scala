@@ -104,7 +104,7 @@ object Matrix {
     def *(V: Array[Complex]): Array[Complex] = {
       val nRowsA = A.size
       val nColsA = A(0).size
-      require(nColsA == V.size, s"dimension error")
+      require(nColsA == V.size, s"dimension error, nColA: $nColsA, V.size: ${V.size}")
       val result = zerosVec(nRowsA)
       for (i <- 0 until nRowsA) {
         for (j <- 0 until nColsA) {

@@ -7,6 +7,11 @@ import quantum.schrodinger.Matrix._
 // Unstaged Schrodinger-style simulation
 
 class QState(var state: Array[Complex], size: Int) {
+  def setState(s: Array[Complex]) = {
+    assert(state.size == s.size, "incompatible size");
+    state = s
+  }
+
   def op(g: Gate, i: Int) = {
     // println(pow(2, i).toInt)
     val iLeft = Matrix.identity(pow(2, i).toInt)
@@ -21,6 +26,7 @@ class QState(var state: Array[Complex], size: Int) {
   def SWAP(i: Int): Unit = op(Gate.SWAP, i)
   def NOT(i: Int): Unit  = op(Gate.NOT, i)
   def CNOT(i: Int): Unit = op(Gate.CNOT, i)
+  def CCNOT(i: Int): Unit = op(Gate.CCNOT, i)
   def S(i: Int): Unit    = op(Gate.S, i)
   def T(i: Int): Unit    = op(Gate.T, i)
 
@@ -42,7 +48,7 @@ class QState(var state: Array[Complex], size: Int) {
 
 object QState {
   def apply(n: Int): QState = {
-    val s = Matrix.zerosVec(pow(n, 2).toInt)
+    val s = Matrix.zerosVec(pow(2, n).toInt)
     s(0) = 1 // all deterministically zero
     new QState(s, n)
   }
