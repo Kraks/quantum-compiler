@@ -2,7 +2,6 @@ package quantum.schrodinger.staged
 
 import math.pow
 import quantum._
-import quantum.Syntax._
 
 import lms.core._
 import lms.core.stub._

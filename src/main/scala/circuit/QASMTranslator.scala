@@ -1,4 +1,4 @@
-package quantum
+package quantum.circuit
 
 // Translate to OpenQASM format
 

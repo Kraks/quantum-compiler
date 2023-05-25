@@ -4,11 +4,13 @@ package quantum.feynman
 // Following the Scheme Pearl paper on Quantum Continuation by Choudhury, Agapiev and Sabry
 
 import scala.util.continuations._
-import quantum.Syntax._
+
+import quantum.circuit.Syntax._
+import quantum.circuit.Examples._
 import quantum.utils.Utils
 import EvalState._
 
-object QuantumContSim {
+object QuantumEvalCont {
   // Accumulate states and their probability amplitudes
   type Ans = Map[Vector[Boolean], Double]
 
@@ -36,15 +38,13 @@ object QuantumContSim {
 }
 
 object TestQContSim {
-  import QuantumContSim._
-
+  // Comparing the performance of QuantumEvalCont and QuantumEvalCPS
   def main(args: Array[String]): Unit = {
-    import quantum.Examples._
     val N = 10000
     val (_, t1) = Utils.time {
       for (i <- 0 to N) {
-        QuantumContSim.runCircuit(simon, State(4))
-        // prettyPrint(QuantumContSim.runCircuit(simon, State(4)))
+        QuantumEvalCont.runCircuit(simon, State(4))
+        // prettyPrint(QuantumEvalCont.runCircuit(simon, State(4)))
         // println()
       }
     }

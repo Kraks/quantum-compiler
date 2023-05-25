@@ -9,7 +9,7 @@ import lms.thirdparty.CCodeGenLibs
 import lms.core.Backend._
 import java.io.{ByteArrayOutputStream, PrintStream}
 
-// Extends C++ code generator with staticData
+// Extends LMS C++ code generator with staticData
 
 abstract class QCodeGen extends DslGenCPP {
   override def shallow(n: Node): Unit = n match {

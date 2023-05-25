@@ -13,8 +13,8 @@ import lms.thirdparty.CCodeGenLibs
 import scala.util.continuations._
 import scala.collection.immutable.{List => SList}
 
-import Syntax.{Exp => QExp, _}
-import Examples._
+import quantum.circuit.Syntax.{Exp => QExp, _}
+import quantum.circuit.Examples._
 import quantum.feynman._
 import quantum.feynman.staged._
 import quantum.feynman.EvalState.{prettyPrint, State}

@@ -1,4 +1,4 @@
-package quantum
+package quantum.circuit
 
 object Syntax {
   abstract class Exp

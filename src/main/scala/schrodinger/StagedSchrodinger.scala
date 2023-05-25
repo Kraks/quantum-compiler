@@ -11,7 +11,7 @@ import lms.thirdparty.CLibs
 import lms.thirdparty.CCodeGenLibs
 
 import quantum._
-import quantum.Syntax._
+import quantum.circuit.Syntax._
 import quantum.schrodinger.Matrix
 import quantum.schrodinger.Matrix._
 import quantum.schrodinger.Complex

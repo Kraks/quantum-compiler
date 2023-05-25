@@ -2,7 +2,7 @@ package quantum.feynman
 
 // Auxiliary definitions for the evaluators
 
-import quantum.Syntax._
+import quantum.circuit.Syntax._
 
 object EvalState {
   case class State(d: Double, bs: Vector[Boolean]) {
