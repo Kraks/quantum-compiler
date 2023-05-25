@@ -25,10 +25,12 @@ class QState(var state: Array[Complex], size: Int) {
   def T(i: Int): Unit    = op(Gate.T, i)
 
   def summary: List[(String, Complex)] = {
-    state.toList.zipWithIndex.map({ case (s, i) =>
-      val bin = Integer.toBinaryString(i)
-      ("0" * (size - bin.length) + bin, s)
-    }).filter(_._2 != (0: Complex))
+    state.toList.zipWithIndex
+      .map({ case (s, i) =>
+        val bin = Integer.toBinaryString(i)
+        ("0" * (size - bin.length) + bin, s)
+      })
+      .filter(_._2 != (0: Complex))
   }
 
   def prettyPrintSummary: Unit = {

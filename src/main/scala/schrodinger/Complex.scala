@@ -8,8 +8,8 @@ case class Complex(re: Double, im: Double) {
 
   def prettyPrint: String = {
     val decFormat = new DecimalFormat("#.000")
-    val reStr = decFormat.format(re)
-    val imStr = decFormat.format(im)
+    val reStr     = decFormat.format(re)
+    val imStr     = decFormat.format(im)
     if (im == 0) reStr
     else reStr + (if (im > 0) "+" + imStr else imStr) + "*i"
   }

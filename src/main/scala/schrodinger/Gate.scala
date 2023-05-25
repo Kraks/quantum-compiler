@@ -25,7 +25,7 @@ object Gate {
       Array(1, 0, 0, 0),
       Array(0, 0, 1, 0),
       Array(0, 1, 0, 0),
-      Array(0, 0, 0, 1),
+      Array(0, 0, 0, 1)
     )
   )
   val NOT = Gate(

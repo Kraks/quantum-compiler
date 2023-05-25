@@ -48,12 +48,16 @@ class SchrodingerTest extends AnyFunSuite {
     s.CNOT(1)
     s.H(0)
     s.H(1)
-    assert(checkEq(s.summary,
-      List[(String, Complex)](
-        ("0000", 0.5),
-        ("0011", 0.5),
-        ("1100", 0.5),
-        ("1111", -0.5)
-      )))
+    assert(
+      checkEq(
+        s.summary,
+        List[(String, Complex)](
+          ("0000", 0.5),
+          ("0011", 0.5),
+          ("1100", 0.5),
+          ("1111", -0.5)
+        )
+      )
+    )
   }
 }
