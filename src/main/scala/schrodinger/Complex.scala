@@ -1,4 +1,4 @@
-package quantum.tensor
+package quantum.schrodinger
 
 case class Complex(re: Double, im: Double) {
   override def toString = s"{$re, $im}"

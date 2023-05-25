@@ -1,4 +1,4 @@
-package quantum
+package quantum.utils
 
 object Utils {
   def time[R](block: => R): (R, Double) = {

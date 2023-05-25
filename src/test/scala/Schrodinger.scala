@@ -1,10 +1,10 @@
-package quantum.tensor
+package quantum.schrodinger
 
 import math.pow
 import org.scalatest.funsuite.AnyFunSuite
 
-import quantum.tensor.Matrix._
-import quantum.tensor.gate.{Gate, _}
+import quantum.schrodinger.Matrix._
+import quantum.schrodinger.gate.{Gate, _}
 
 class SchrodingerTest extends AnyFunSuite {
   test("EPR") {

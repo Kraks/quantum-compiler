@@ -1,4 +1,4 @@
-package quantum
+package quantum.schrodinger.staged
 
 import lms.core._
 import lms.core.stub._

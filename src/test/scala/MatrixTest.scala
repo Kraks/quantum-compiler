@@ -1,4 +1,4 @@
-package quantum.tensor
+package quantum.schrodinger
 
 import math.pow
 import org.scalatest.funsuite.AnyFunSuite

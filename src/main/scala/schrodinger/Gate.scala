@@ -1,8 +1,8 @@
-package quantum.tensor.gate
+package quantum.schrodinger.gate
 
 import math.pow
-import quantum.tensor.Matrix._
-import quantum.tensor.Complex
+import quantum.schrodinger.Matrix._
+import quantum.schrodinger.Complex
 
 case class Gate(id: String, m: Matrix) {
   def arity: Int = pow(m.size, 0.5).toInt

@@ -1,10 +1,12 @@
-package quantum
+package quantum.feynman
 
-// Quantum circuit evaluator
+// Unstaged quantum circuit evaluator in Feynman-style using continuations
 // Instead of using shift/reset, this one is directly written in CPS
 
-import Syntax._
+import quantum.Syntax._
+import quantum.utils.Utils
 import EvalState._
+
 import scala.collection.mutable.HashMap
 
 object QuantumEvalCPS {

@@ -1,10 +1,11 @@
-package quantum
+package quantum.feynman
 
-// Quantum circuit evaluator
+// Unstaged quantum circuit evaluator in Feynman-style using continuations
 // Following the Scheme Pearl paper on Quantum Continuation by Choudhury, Agapiev and Sabry
 
 import scala.util.continuations._
-import Syntax._
+import quantum.Syntax._
+import quantum.utils.Utils
 import EvalState._
 
 object QuantumContSim {
@@ -38,7 +39,7 @@ object TestQContSim {
   import QuantumContSim._
 
   def main(args: Array[String]): Unit = {
-    import Examples._
+    import quantum.Examples._
     val N = 10000
     val (_, t1) = Utils.time {
       for (i <- 0 to N) {

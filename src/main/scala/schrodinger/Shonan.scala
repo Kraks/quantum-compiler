@@ -1,4 +1,4 @@
-package shonan
+package quantum.schrodinger.staged
 
 // The Shonan Challenge - matrix vector product
 // https://scala-lms.github.io/tutorials/shonan.html
@@ -12,8 +12,6 @@ import lms.thirdparty.CCodeGenLibs
 
 import lms.core.Backend._
 import java.io.{ByteArrayOutputStream, PrintStream}
-
-import quantum.QCodeGen
 
 object Shonan {
   val A = scala.Array

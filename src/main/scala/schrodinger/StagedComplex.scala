@@ -1,4 +1,4 @@
-package quantum.tensor.staged
+package quantum.schrodinger.staged
 
 import math.pow
 import quantum._
@@ -12,7 +12,7 @@ import lms.thirdparty.CLibs
 import lms.thirdparty.CCodeGenLibs
 
 import lms.core.Backend._
-import quantum.tensor.Complex
+import quantum.schrodinger.Complex
 
 // Staged complex numbers
 

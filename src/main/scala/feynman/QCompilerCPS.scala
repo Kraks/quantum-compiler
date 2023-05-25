@@ -1,6 +1,6 @@
-package quantum
+package quantum.feynman.staged
 
-// The quantum circuit compiler written in CPS, generate C code
+// Quantum circuit compiler in Feynman-style using continuations
 
 import lms.core._
 import lms.core.stub._
@@ -14,7 +14,7 @@ import lms.core.Backend._
 import scala.util.continuations._
 import scala.collection.immutable.{List => SList}
 
-import Syntax.{Exp => QExp, _}
+import quantum.Syntax.{Exp => QExp, _}
 
 @virtualize
 trait QCState extends Dsl {
@@ -201,7 +201,7 @@ abstract class QCDriver[A: Manifest, B: Manifest] extends DslDriverCPP[A, B] { q
 }
 
 object TestQC {
-  import Examples._
+  import quantum.Examples._
 
   def main(args: Array[String]): Unit = {
     val snippet = new QCDriver[Int, Unit] with QCompilerCPS {

@@ -4,22 +4,23 @@ package quantum
 
 import lms.core._
 import lms.core.stub._
+import lms.core.Backend._
 import lms.core.virtualize
 import lms.macros.SourceContext
 import lms.thirdparty.CLibs
 import lms.thirdparty.CCodeGenLibs
-
-import lms.core.Backend._
 
 import scala.util.continuations._
 import scala.collection.immutable.{List => SList}
 
 import Syntax.{Exp => QExp, _}
 import Examples._
-import QuantumContSim._
-import EvalState.{prettyPrint, State}
-object Benchmark {
+import quantum.feynman._
+import quantum.feynman.staged._
+import quantum.feynman.EvalState.{prettyPrint, State}
+import quantum.utils.Utils
 
+object Benchmark {
   val benchmarks: List[(Circuit, Int)] = List(
     // (simon, 4),
     // (rand4, 4),

@@ -1,4 +1,4 @@
-package quantum.tensor
+package quantum.schrodinger
 
 import Complex._
 

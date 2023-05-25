@@ -1,4 +1,4 @@
-package quantum.tensor.staged
+package quantum.schrodinger.staged
 
 import math.pow
 
@@ -12,10 +12,10 @@ import lms.thirdparty.CCodeGenLibs
 
 import quantum._
 import quantum.Syntax._
-import quantum.tensor.Matrix
-import quantum.tensor.Matrix._
-import quantum.tensor.Complex
-import quantum.tensor.gate.{Gate, _}
+import quantum.schrodinger.Matrix
+import quantum.schrodinger.Matrix._
+import quantum.schrodinger.Complex
+import quantum.schrodinger.gate.{Gate, _}
 
 class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[Complex], Unit] with ComplexOps { q =>
   override val codegen = new QCodeGen with CppCodeGen_Complex {

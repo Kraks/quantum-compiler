@@ -1,8 +1,10 @@
-package quantum.tensor
+package quantum.schrodinger
 
 import math.pow
-import quantum.tensor.gate._
-import quantum.tensor.Matrix._
+import quantum.schrodinger.gate._
+import quantum.schrodinger.Matrix._
+
+// Unstaged Schrodinger-style simulation
 
 class QState(var state: Array[Complex], size: Int) {
   def op(g: Gate, i: Int) = {

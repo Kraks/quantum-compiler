@@ -1,8 +1,8 @@
-package quantum
+package quantum.feynman
 
 // Auxiliary definitions for the evaluators
 
-import Syntax._
+import quantum.Syntax._
 
 object EvalState {
   case class State(d: Double, bs: Vector[Boolean]) {
