@@ -18,10 +18,24 @@ class QState(var state: Array[Complex], size: Int) {
     // tiling, auto vec
   }
   def H(i: Int): Unit    = op(Gate.H, i)
+  def SWAP(i: Int): Unit = op(Gate.SWAP, i)
   def NOT(i: Int): Unit  = op(Gate.NOT, i)
   def CNOT(i: Int): Unit = op(Gate.CNOT, i)
   def S(i: Int): Unit    = op(Gate.S, i)
   def T(i: Int): Unit    = op(Gate.T, i)
+
+  def summary: List[(String, Complex)] = {
+    state.toList.zipWithIndex.map({ case (s, i) =>
+      val bin = Integer.toBinaryString(i)
+      ("0" * (size - bin.length) + bin, s)
+    }).filter(_._2 != (0: Complex))
+  }
+
+  def prettyPrintSummary: Unit = {
+    summary.foreach { case (s, d) =>
+      println(s"${d.prettyPrint}|$s⟩")
+    }
+  }
 }
 
 object QState {
