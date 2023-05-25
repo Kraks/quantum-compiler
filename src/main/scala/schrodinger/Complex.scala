@@ -26,5 +26,5 @@ case class Complex(re: Double, im: Double) {
 }
 
 object Complex {
-  implicit def fromDouble(d: Double) = Complex(d, 0)
+  implicit def fromDouble(d: Double): Complex = Complex(d, 0)
 }

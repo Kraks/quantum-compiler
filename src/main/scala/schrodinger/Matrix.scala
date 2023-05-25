@@ -46,6 +46,20 @@ object Matrix {
     }
   }
 
+  implicit class DoubleOps(scalar: Double) {
+    def *(A: Matrix): Matrix = {
+      val nRowsA = A.size
+      val nColsA = A(0).size
+      val result = Array.ofDim[Complex](nRowsA, nColsA)
+      for (i <- 0 until nRowsA) {
+        for (j <- 0 until nColsA) {
+          result(i)(j) = scalar * A(i)(j)
+        }
+      }
+      result
+    }
+  }
+
   implicit class MatrixOps(A: Matrix) {
     def pPrint: String = prettyPrint(A)
     // Unstaged Kronecker product
