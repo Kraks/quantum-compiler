@@ -13,12 +13,12 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 
 abstract class QCodeGen extends DslGenCPP {
   override def shallow(n: Node): Unit = n match {
-    case n @ Node(s,"staticData",List(Backend.Const(a)),_) =>
+    case n @ Node(s, "staticData", List(Backend.Const(a)), _) =>
       val q = a match {
-        case x: Array[_] => "Array("+x.mkString(",")+")"
-        case _ => a
+        case x: Array[_] => "Array(" + x.mkString(",") + ")"
+        case _           => a
       }
-      emit("p"+quote(s)); emit(s" /* staticData $q */")
+      emit("p" + quote(s)); emit(s" /* staticData $q */")
     case n =>
       super.shallow(n)
   }
@@ -26,14 +26,14 @@ abstract class QCodeGen extends DslGenCPP {
   // Note: so far only handles scalar values and flat arrays
   override def quoteStatic(n: Node) = n match {
     case Node(s, "staticData", List(Backend.Const(a)), _) =>
-      val arg = "p"+quote(s)
-      val m = typeMap.getOrElse(s, manifest[Unknown])
+      val arg = "p" + quote(s)
+      val m   = typeMap.getOrElse(s, manifest[Unknown])
       val (tpe, postfix) = m.typeArguments match {
-        case Nil => (remap(m), "")
+        case Nil         => (remap(m), "")
         case List(inner) => (remap(inner), "[]")
       }
       val rhs = m.typeArguments match {
-        case Nil => a.toString
+        case Nil         => a.toString
         case List(inner) => "{" + a.asInstanceOf[Array[_]].mkString(",") + "}"
       }
       s"$tpe $arg$postfix = $rhs;"
@@ -57,15 +57,15 @@ abstract class QCodeGen extends DslGenCPP {
   |}
   """.stripMargin
 
-  val initInput: String = "int input[] = {1, 2, 3, 4, 5};"
+  val initInput: String  = "int input[] = {1, 2, 3, 4, 5};"
   val procOutput: String = "printArray(output, 5);";
   def declareOutput(m: Manifest[_]): String = {
     if (remap(m) == "void") ""
     else s"${remap(m)} output = "
   }
 
-  override def emitAll(g: Graph, name: String)(m1:Manifest[_],m2:Manifest[_]): Unit = {
-    val ng = init(g)
+  override def emitAll(g: Graph, name: String)(m1: Manifest[_], m2: Manifest[_]): Unit = {
+    val ng  = init(g)
     val efs = ""
     val src = run(name, ng)
     emitDefines(stream)

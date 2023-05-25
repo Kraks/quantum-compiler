@@ -38,7 +38,7 @@ object Matrix {
   def zerosVec(n: Int): Array[Complex] = Array.fill(n)(0)
 
   def prettyPrint(A: Matrix): String = {
-    val sb = new StringBuilder
+    val sb    = new StringBuilder
     val nRows = A.size
     val nCols = A(0).size
     sb ++= "["
@@ -74,7 +74,7 @@ object Matrix {
           result(i * nRowsB + k)(j * nColsB + l) = A(i)(j) * B(k)(l)
         }
       }
-      //println(s"${A.dim} ⊗ ${B.dim} = ${result.dim}")
+      // println(s"${A.dim} ⊗ ${B.dim} = ${result.dim}")
       result
     }
     // Matrix multiplication
@@ -83,7 +83,10 @@ object Matrix {
       val nColsA = A(0).size
       val nRowsB = B.size
       val nColsB = B(0).size
-      require(nColsA == nRowsB, s"dimension error nColsA=$nColsA, nRowsB=$nRowsB \n${prettyPrint(A)} * ${prettyPrint(B)}")
+      require(
+        nColsA == nRowsB,
+        s"dimension error nColsA=$nColsA, nRowsB=$nRowsB \n${prettyPrint(A)} * ${prettyPrint(B)}"
+      )
       val result = Array.ofDim[Complex](nRowsA, nColsB)
       for (i <- 0 until nRowsA) {
         for (j <- 0 until nColsB) {
@@ -94,7 +97,7 @@ object Matrix {
           result(i)(j) = sum
         }
       }
-      //println(s"${A.dim} * ${B.dim} = ${result.dim}")
+      // println(s"${A.dim} * ${B.dim} = ${result.dim}")
       result
     }
     // Matrix-vector product
@@ -108,7 +111,7 @@ object Matrix {
           result(i) += A(i)(j) * V(j)
         }
       }
-      //println(s"${A.dim} * ${V.size} = ${result.size}")
+      // println(s"${A.dim} * ${V.size} = ${result.size}")
       result
     }
     def dim: (Int, Int) = (A.size, A(0).size)
@@ -121,52 +124,62 @@ case class Gate(id: String, m: Matrix) {
   def arity: Int = pow(m.size, 0.5).toInt
 }
 object Gate {
-  val isq2 = 1.0 / pow(2.0, 0.5) 
-  val H = Gate("H",
+  val isq2 = 1.0 / pow(2.0, 0.5)
+  val H = Gate(
+    "H",
     Array(
       Array(isq2, isq2),
       Array(isq2, -isq2)
-    ))
-  val NOT = Gate("NOT",
+    )
+  )
+  val NOT = Gate(
+    "NOT",
     Array(
       Array(0, 1),
       Array(1, 0)
-    ))
-  val CNOT = Gate("CNOT", 
+    )
+  )
+  val CNOT = Gate(
+    "CNOT",
     Array(
       Array(1, 0, 0, 0),
       Array(0, 1, 0, 0),
       Array(0, 0, 0, 1),
-      Array(0, 0, 1, 0),
-    ))
-  val S = Gate("S",
+      Array(0, 0, 1, 0)
+    )
+  )
+  val S = Gate(
+    "S",
     Array(
       Array(1, 0),
       Array(0, Complex(0, 1))
-    ))
-  val T = Gate("T",
+    )
+  )
+  val T = Gate(
+    "T",
     Array(
       Array(1, 0),
       Array(0, isq2 + isq2 * Complex(0, 1))
-    ))
+    )
+  )
 }
 
 class QState(var state: Array[Complex], size: Int) {
   def op(g: Gate, i: Int) = {
-    //println(pow(2, i).toInt)
+    // println(pow(2, i).toInt)
     val iLeft = Matrix.identity(pow(2, i).toInt)
-    //println(iLeft.pPrint)
-    //println(pow(2, size - i - g.arity).toInt)
+    // println(iLeft.pPrint)
+    // println(pow(2, size - i - g.arity).toInt)
     val iRight = Matrix.identity(pow(2, size - i - g.arity).toInt)
-    //println(iRight.pPrint)
+    // println(iRight.pPrint)
     state = iLeft ⊗ g.m ⊗ iRight * state
     // tiling, auto vec
   }
-  def H(i: Int): Unit = op(Gate.H, i)
-  def NOT(i: Int): Unit = op(Gate.NOT, i)
+  def H(i: Int): Unit    = op(Gate.H, i)
+  def NOT(i: Int): Unit  = op(Gate.NOT, i)
   def CNOT(i: Int): Unit = op(Gate.CNOT, i)
-  def S(i: Int): Unit = op(Gate.S, i)
-  def T(i: Int): Unit = op(Gate.T, i)
+  def S(i: Int): Unit    = op(Gate.S, i)
+  def T(i: Int): Unit    = op(Gate.T, i)
 }
 
 object QState {

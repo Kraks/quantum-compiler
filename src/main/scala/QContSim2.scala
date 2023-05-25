@@ -15,7 +15,7 @@ object QuantumEvalCPS {
   def evalGate(g: Gate, s: State, k: State => Ans): Ans =
     g match {
       case CCX(x, y, z) if isSet(s.bs, x) && isSet(s.bs, y) => k(State(s.d, neg(s.bs, z)))
-      case CCX(x, y, z) => k(s)
+      case CCX(x, y, z)                                     => k(s)
       case H(x) if isSet(s.bs, x) =>
         k(State(hscale * s.d, neg(s.bs, x)))
         k(State(-1.0 * hscale * s.d, s.bs))

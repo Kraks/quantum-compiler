@@ -21,10 +21,10 @@ import EvalState.{prettyPrint, State}
 object Benchmark {
 
   val benchmarks: List[(Circuit, Int)] = List(
-    //(simon, 4),
-    //(rand4, 4),
-    //(rand8, 8),
-    (rand16, 16),
+    // (simon, 4),
+    // (rand4, 4),
+    // (rand8, 8),
+    (rand16, 16)
   )
 
   def test(ci: (Circuit, Int)): Unit = {
@@ -40,8 +40,8 @@ object Benchmark {
     println(s"$t sec")
 
     val snippet = new QCDriver[Int, Unit] with QCompilerCPS {
-      val circuitSize: Int = size
-      override val repeat: Int = 1
+      val circuitSize: Int                = size
+      override val repeat: Int            = 1
       def snippet(s: Rep[Int]): Rep[Unit] = runCircuit(circuit, State(circuitSize))
     }
     snippet.eval(0)

@@ -25,7 +25,7 @@ trait QCState extends Dsl {
   object Bits {
     def apply(bs: List[Boolean]): Rep[Bits] = {
       val sbs = bs.map(Backend.Const(_))
-      Wrap[Bits](Adapter.g.reflect("new_bits", sbs:_*))
+      Wrap[Bits](Adapter.g.reflect("new_bits", sbs: _*))
     }
   }
 
@@ -35,7 +35,8 @@ trait QCState extends Dsl {
         Wrap[Boolean](Backend.Const(xs(i).asInstanceOf[Backend.Const].x.asInstanceOf[Boolean]))
       case _ => Wrap[Boolean](Adapter.g.reflect("bits_get", Unwrap(bs), Backend.Const(i)))
     }
-    def set(i: Int, v: Rep[Boolean]): Rep[Bits] = Wrap[Bits](Adapter.g.reflect("bits_set", Unwrap(bs), Backend.Const(i), Unwrap(v)))
+    def set(i: Int, v: Rep[Boolean]): Rep[Bits] =
+      Wrap[Bits](Adapter.g.reflect("bits_set", Unwrap(bs), Backend.Const(i), Unwrap(v)))
   }
 
   abstract class State
@@ -49,17 +50,17 @@ trait QCState extends Dsl {
   implicit class StateOps(s: Rep[State]) {
     def d: Rep[Double] = Unwrap(s) match {
       case Adapter.g.Def("new_state", SList(d: Backend.Exp, _)) => Wrap[Double](d)
-      case _ => Wrap[Double](Adapter.g.reflect("state_d", Unwrap(s)))
+      case _                                                    => Wrap[Double](Adapter.g.reflect("state_d", Unwrap(s)))
     }
     def bs: Rep[Bits] = Unwrap(s) match {
       case Adapter.g.Def("new_state", SList(_, bs: Backend.Exp)) => Wrap[Bits](bs)
-      case _ => Wrap[Bits](Adapter.g.reflect("state_bs", Unwrap(s)))
+      case _                                                     => Wrap[Bits](Adapter.g.reflect("state_bs", Unwrap(s)))
     }
   }
 
   def isSet(bs: Rep[Bits], x: QExp): Rep[Boolean] = x match {
     case Wire(pos) => bs(pos)
-    case Bit(b) => b
+    case Bit(b)    => b
   }
 
   def neg(bs: Rep[Bits], x: QExp): Rep[Bits] = x match {
@@ -81,7 +82,7 @@ trait QCompilerCPS extends QCState {
   def evalGate(g: Gate, v: Rep[State], k: Rep[State] => Rep[Ans]): Rep[Ans] = {
     info(s"// $g")
     val repK: Rep[State => Ans] = topFun(k)
-    //val repK: Rep[State => Ans] = Wrap[State => Ans](__topFun(k, 1, xn => Unwrap(k(Wrap[State](xn(0)))), "inline"))
+    // val repK: Rep[State => Ans] = Wrap[State => Ans](__topFun(k, 1, xn => Unwrap(k(Wrap[State](xn(0)))), "inline"))
     g match {
       case CCX(x, y, z) =>
         if (isSet(v.bs, x) && isSet(v.bs, y)) repK(State(v.d, neg(v.bs, z))) else repK(v)
@@ -108,8 +109,8 @@ abstract class QCDriver[A: Manifest, B: Manifest] extends DslDriverCPP[A, B] { q
   val repeat: Int = 1
 
   override val compilerCommand = "g++ -std=c++20 -O3"
-  override val sourceFile = "snippet.cpp"
-  override val executable = "./snippet"
+  override val sourceFile      = "snippet.cpp"
+  override val executable      = "./snippet"
   override val codegen = new DslGenCPP {
     val IR: q.type = q
     registerHeader("<array>")
@@ -161,16 +162,16 @@ abstract class QCDriver[A: Manifest, B: Manifest] extends DslDriverCPP[A, B] { q
     }
 
     override def shallow(n: Node): Unit = n match {
-      case Node(s, "new_bits", xs, _) => es"""{${xs.mkString(", ")}}"""
-      case Node(s, "bits_get", bs::i::Nil, _) => es"$bs[$i]"
-      case Node(s, "new_state", d::bs::Nil, _) => es"{ $d, $bs }"
-      case Node(s, "state_d", st::Nil, _) => es"$st.d"
-      case Node(s, "state_bs", st::Nil, _) => es"$st.bs"
-      case _ => super.shallow(n)
+      case Node(s, "new_bits", xs, _)              => es"""{${xs.mkString(", ")}}"""
+      case Node(s, "bits_get", bs :: i :: Nil, _)  => es"$bs[$i]"
+      case Node(s, "new_state", d :: bs :: Nil, _) => es"{ $d, $bs }"
+      case Node(s, "state_d", st :: Nil, _)        => es"$st.d"
+      case Node(s, "state_bs", st :: Nil, _)       => es"$st.bs"
+      case _                                       => super.shallow(n)
     }
 
-    override def emitAll(g: Graph, name: String)(m1:Manifest[_],m2:Manifest[_]): Unit = {
-      val ng = init(g)
+    override def emitAll(g: Graph, name: String)(m1: Manifest[_], m2: Manifest[_]): Unit = {
+      val ng  = init(g)
       val efs = ""
       val stt = dce.statics.toList.map(quoteStatic).mkString(", ")
       val src = run(name, ng)
@@ -204,11 +205,10 @@ object TestQC {
 
   def main(args: Array[String]): Unit = {
     val snippet = new QCDriver[Int, Unit] with QCompilerCPS {
-      val circuitSize: Int = 4
-      override val repeat: Int = 1
+      val circuitSize: Int                = 4
+      override val repeat: Int            = 1
       def snippet(s: Rep[Int]): Rep[Unit] = runCircuit(simon, State(circuitSize))
     }
     snippet.eval(0)
   }
 }
-

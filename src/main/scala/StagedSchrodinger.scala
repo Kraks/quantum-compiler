@@ -16,7 +16,7 @@ import lms.core.Backend._
 object Matrix {
   case class Complex(re: Double, im: Double) {
     override def toString = s"{$re, $im}"
-      //re + (if (im < 0) "-" + -im else "+" + im) + "*i"
+    // re + (if (im < 0) "-" + -im else "+" + im) + "*i"
     def +(c: Complex) = Complex(re + c.re, im + c.im)
     def -(c: Complex) = Complex(re - c.re, im - c.im)
     def *(c: Complex) = Complex(re * c.re - im * c.im, re * c.im + im * c.re)
@@ -47,7 +47,7 @@ object Matrix {
   def zerosVec(n: Int): Array[Complex] = Array.fill(n)(0)
 
   def prettyPrint(A: Matrix): String = {
-    val sb = new StringBuilder
+    val sb    = new StringBuilder
     val nRows = A.size
     val nCols = A(0).size
     sb ++= "["
@@ -83,7 +83,7 @@ object Matrix {
           result(i * nRowsB + k)(j * nColsB + l) = A(i)(j) * B(k)(l)
         }
       }
-      //println(s"${A.dim} ⊗ ${B.dim} = ${result.dim}")
+      // println(s"${A.dim} ⊗ ${B.dim} = ${result.dim}")
       result
     }
 
@@ -98,7 +98,7 @@ object Matrix {
           result(i) += A(i)(j) * V(j)
         }
       }
-      //println(s"${A.dim} * ${V.size} = ${result.size}")
+      // println(s"${A.dim} * ${V.size} = ${result.size}")
       result
     }
     def dim: (Int, Int) = (A.size, A(0).size)
@@ -112,33 +112,43 @@ case class Gate(id: String, m: Matrix) {
 }
 object Gate {
   val isq2 = 1.0 / pow(2.0, 0.5)
-  val H = Gate("H",
+  val H = Gate(
+    "H",
     Array(
       Array(isq2, isq2),
       Array(isq2, -isq2)
-    ))
-  val NOT = Gate("NOT",
+    )
+  )
+  val NOT = Gate(
+    "NOT",
     Array(
       Array(0, 1),
       Array(1, 0)
-    ))
-  val CNOT = Gate("CNOT",
+    )
+  )
+  val CNOT = Gate(
+    "CNOT",
     Array(
       Array(1, 0, 0, 0),
       Array(0, 1, 0, 0),
       Array(0, 0, 0, 1),
-      Array(0, 0, 1, 0),
-    ))
-  val S = Gate("S",
+      Array(0, 0, 1, 0)
+    )
+  )
+  val S = Gate(
+    "S",
     Array(
       Array(1, 0),
       Array(0, Complex(0, 1))
-    ))
-  val T = Gate("T",
+    )
+  )
+  val T = Gate(
+    "T",
     Array(
       Array(1, 0),
       Array(0, isq2 + isq2 * Complex(0, 1))
-    ))
+    )
+  )
 }
 
 class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[Complex], Unit] with ComplexOps { q =>
@@ -164,13 +174,13 @@ class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[
     """.stripMargin
   }
   override val compilerCommand = "g++ -std=c++20 -O3"
-  override val sourceFile = "snippet.cpp"
-  override val executable = "./snippet"
+  override val sourceFile      = "snippet.cpp"
+  override val executable      = "./snippet"
 
   def unrollIf(c: Boolean, r: Range) = new {
     def foreach(f: Rep[Int] => Rep[Unit]) = {
       if (c) for (j <- (r.start until r.end): Range) f(j)
-      else for (j <- (r.start until r.end): Rep[Range]) f(j)
+      else for (j   <- (r.start until r.end): Rep[Range]) f(j)
     }
   }
 
@@ -188,14 +198,14 @@ class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[
   }
 
   def sizeof(s: String): Int = s match {
-    case "int" => 4
-    case "int64" => 8
-    case "double" => 8
+    case "int"     => 4
+    case "int64"   => 8
+    case "double"  => 8
     case "Complex" => sizeof("double") * 2
   }
 
   def op(g: Gate, i: Int, state: Rep[Array[Complex]], des: Rep[Array[Complex]]): Unit = {
-    val iLeft = Matrix.identity(pow(2, i).toInt)
+    val iLeft  = Matrix.identity(pow(2, i).toInt)
     val iRight = Matrix.identity(pow(2, size - i - g.arity).toInt)
     matVecProd(iLeft ⊗ g.m ⊗ iRight, state, des)
     // XXX: can we eliminate this copy?

@@ -16,7 +16,7 @@ object EvalState {
 
   def isSet(bs: Vector[Boolean], x: Exp): Boolean = x match {
     case Wire(pos) => bs(pos)
-    case Bit(b) => b
+    case Bit(b)    => b
   }
 
   def neg(bs: Vector[Boolean], x: Exp): Vector[Boolean] = x match {
@@ -25,7 +25,7 @@ object EvalState {
 
   def prettyPrint(m: Map[Vector[Boolean], Double]): Unit = {
     m.filter(kv => math.abs(kv._2) > 0.001).foreach { case (k, v) =>
-      val p = (if (v > 0) "+" else "") + f"$v%.3f"
+      val p  = (if (v > 0) "+" else "") + f"$v%.3f"
       val vs = k.map(x => if (x) "1" else "0").mkString
       print(s"$p|$vs⟩ ")
     }
