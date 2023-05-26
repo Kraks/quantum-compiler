@@ -19,20 +19,36 @@ import quantum.schrodinger.gate.{Gate, _}
 
 class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[Complex], Unit] with ComplexOps { q =>
   override val codegen = new QCodeGen with CppCodeGen_Complex {
+    registerHeader("<cmath>")
+
     val IR: q.type = q
     override val initInput: String = s"""
     |  Complex* input = (Complex*)malloc(${pow(2, size)} * sizeof(Complex));
     |  input[0] = {1, 0};
     |""".stripMargin
-    override val procOutput: String = s"printArray(input, ${pow(2, size)});";
+    override val procOutput: String = s"printResult(input, ${pow(2, size)});";
     override lazy val prelude = """
     |using namespace std::chrono;
     |typedef struct Complex { double re; double im; } Complex;
-    |void printComplex(Complex* c) { printf("%.3f + %.3fi", c->re, c->im); }
-    |void printArray(Complex arr[], int size) {
+    |void printComplex(Complex* c) {
+    |  if (c->im == 0.0) { printf("%.3f", c->re); }
+    |  else { printf("%.3f + %.3fi", c->re, c->im); }
+    |}
+    |void printBinary(uint64_t n, size_t size) {
+    |  for (int i = size - 1; i >= 0; i--) {
+    |    int shifted = n >> i;
+    |    int bit = shifted & 1;
+    |    printf("%d", bit);
+    |  }
+    |}
+    |void printResult(Complex arr[], size_t size) {
     |  printf("[");
     |  for (int i = 0; i < size; i++) {
+    |    if ((arr+i)->re == 0.0 && (arr+i)->im == 0.0) continue;
     |    printComplex(arr+i);
+    |    printf("|");
+    |    printBinary(i, sqrt(size));
+    |    printf("⟩");
     |    if (i < size - 1) { printf(", "); }
     |  }
     |  printf("]\n");
@@ -56,7 +72,7 @@ class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[
     for (i <- (0 until n): Range) {
       des(i) = 0.0
       val sparse = a0(i).count(_ != (0: Complex)) < 0.5 * a0(i).size
-      //System.out.println(s"sparsity: ${a0(i).toList} $sparse")
+      // System.out.println(s"sparsity: ${a0(i).toList} $sparse")
       for (j <- unrollIf(sparse, 0 until a0(0).size)) {
         des(i) = des(i) + a(i).apply(j) * v(j)
       }
@@ -109,10 +125,10 @@ class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[
 
   def snippet(input: Rep[Array[Complex]]): Rep[Unit] = {
     implicit val state = input
-    //H(0)
-    //CNOT(0)
-    //S(0)
-    //T(0)
+    // H(0)
+    // CNOT(0)
+    // S(0)
+    // T(0)
     simon(input)
   }
 
