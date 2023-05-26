@@ -56,7 +56,7 @@ class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[
     for (i <- (0 until n): Range) {
       des(i) = 0.0
       val sparse = a0(i).count(_ != (0: Complex)) < 0.5 * a0(i).size
-      System.out.println(s"sparsity: ${a0(i).toList} $sparse")
+      //System.out.println(s"sparsity: ${a0(i).toList} $sparse")
       for (j <- unrollIf(sparse, 0 until a0(0).size)) {
         des(i) = des(i) + a(i).apply(j) * v(j)
       }
@@ -70,27 +70,57 @@ class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[
     case "Complex" => sizeof("double") * 2
   }
 
-  def op(g: Gate, i: Int, state: Rep[Array[Complex]], des: Rep[Array[Complex]]): Unit = {
+  lazy val buf = NewArray[Complex](pow(2, size).toInt)
+
+  def op(g: Gate, i: Int, state: Rep[Array[Complex]]): Unit = {
     val iLeft  = Matrix.identity(pow(2, i).toInt)
     val iRight = Matrix.identity(pow(2, size - i - g.arity).toInt)
-    matVecProd(iLeft ⊗ g.m ⊗ iRight, state, des)
+    matVecProd(iLeft ⊗ g.m ⊗ iRight, state, buf)
     // XXX: can we eliminate this copy?
-    des.copyToArray(state, 0, pow(2, size).toInt * sizeof("Complex"))
+    buf.copyToArray(state, 0, pow(2, size).toInt * sizeof("Complex"))
+  }
+
+  def H(i: Int)(implicit state: Rep[Array[Complex]]): Unit     = op(Gate.H, i, state)
+  def SWAP(i: Int)(implicit state: Rep[Array[Complex]]): Unit  = op(Gate.SWAP, i, state)
+  def NOT(i: Int)(implicit state: Rep[Array[Complex]]): Unit   = op(Gate.NOT, i, state)
+  def CNOT(i: Int)(implicit state: Rep[Array[Complex]]): Unit  = op(Gate.CNOT, i, state)
+  def CCNOT(i: Int)(implicit state: Rep[Array[Complex]]): Unit = op(Gate.CCNOT, i, state)
+  def S(i: Int)(implicit state: Rep[Array[Complex]]): Unit     = op(Gate.S, i, state)
+  def T(i: Int)(implicit state: Rep[Array[Complex]]): Unit     = op(Gate.T, i, state)
+  def Z(i: Int)(implicit state: Rep[Array[Complex]]): Unit     = op(Gate.Z, i, state)
+  def CZ(i: Int)(implicit state: Rep[Array[Complex]]): Unit    = op(Gate.CZ, i, state)
+
+  def simon(input: Rep[Array[Complex]]): Rep[Unit] = {
+    implicit val state = input
+    H(0)
+    H(1)
+    SWAP(0) // swap 0 and 1
+    CNOT(1) // CNOT(1, 2)
+    SWAP(2) // swap 2 and 3
+    CNOT(1) // CNOT(1, 2)
+    SWAP(0)
+    SWAP(1)
+    CNOT(2)
+    SWAP(1)
+    CNOT(1)
+    H(0)
+    H(1)
   }
 
   def snippet(input: Rep[Array[Complex]]): Rep[Unit] = {
-    val buf = NewArray[Complex](pow(2, size).toInt)
-    op(Gate.H, 0, input, buf)
-    op(Gate.CNOT, 0, input, buf)
-    op(Gate.S, 0, input, buf)
-    op(Gate.T, 0, input, buf)
+    implicit val state = input
+    //H(0)
+    //CNOT(0)
+    //S(0)
+    //T(0)
+    simon(input)
   }
 
 }
 
 object TestStagedSchrodinger {
   def main(args: Array[String]): Unit = {
-    val driver = new StagedSchrodinger(List(), 2)
+    val driver = new StagedSchrodinger(List(), 4)
     println(driver.code)
     driver.eval(Array())
   }
