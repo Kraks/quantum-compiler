@@ -2,6 +2,8 @@ package quantum.schrodinger
 
 import Complex._
 
+// Unstaged matrix operations
+
 object Matrix {
   type Matrix = Array[Array[Complex]]
 
@@ -12,6 +14,7 @@ object Matrix {
     }
     result
   }
+
   def zeros(n: Int): Matrix = {
     val result = Array.ofDim[Complex](n, n)
     for (i <- 0 until n) {
@@ -21,6 +24,7 @@ object Matrix {
     }
     result
   }
+
   def zerosVec(n: Int): Array[Complex] = Array.fill(n)(0)
 
   def prettyPrint(A: Matrix): String = {
@@ -77,7 +81,8 @@ object Matrix {
       // println(s"${A.dim} ⊗ ${B.dim} = ${result.dim}")
       result
     }
-    // Unstaged matrix multiplication
+
+    // matrix multiplication
     def *(B: Matrix): Matrix = {
       val nRowsA = A.size
       val nColsA = A(0).size
@@ -100,7 +105,8 @@ object Matrix {
       // println(s"${A.dim} * ${B.dim} = ${result.dim}")
       result
     }
-    // Unstaged matrix-vector product
+
+    // matrix-vector product
     def *(V: Array[Complex]): Array[Complex] = {
       val nRowsA = A.size
       val nColsA = A(0).size
@@ -114,6 +120,7 @@ object Matrix {
       // println(s"${A.dim} * ${V.size} = ${result.size}")
       result
     }
+
     def dim: (Int, Int) = (A.size, A(0).size)
   }
 }

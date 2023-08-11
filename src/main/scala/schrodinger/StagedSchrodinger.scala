@@ -17,7 +17,7 @@ import quantum.schrodinger.Matrix._
 import quantum.schrodinger.Complex
 import quantum.schrodinger.gate.{Gate, _}
 
-class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[Complex], Unit] with ComplexOps { q =>
+abstract class StagedSchrodinger(size: Int) extends DslDriverCPP[Array[Complex], Unit] with ComplexOps { q =>
   override val codegen = new QCodeGen with CppCodeGen_Complex {
     registerHeader("<cmath>")
 
@@ -71,7 +71,7 @@ class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[
     val a = staticData(a0)
     for (i <- (0 until n): Range) {
       des(i) = 0.0
-      val sparse = a0(i).count(_ != (0: Complex)) < 0.5 * a0(i).size
+      val sparse = false // a0(i).count(_ != (0: Complex)) < 0.5 * a0(i).size
       // System.out.println(s"sparsity: ${a0(i).toList} $sparse")
       for (j <- unrollIf(sparse, 0 until a0(0).size)) {
         des(i) = des(i) + a(i).apply(j) * v(j)
@@ -105,38 +105,36 @@ class StagedSchrodinger(circuit: Circuit, size: Int) extends DslDriverCPP[Array[
   def T(i: Int)(implicit state: Rep[Array[Complex]]): Unit     = op(Gate.T, i, state)
   def Z(i: Int)(implicit state: Rep[Array[Complex]]): Unit     = op(Gate.Z, i, state)
   def CZ(i: Int)(implicit state: Rep[Array[Complex]]): Unit    = op(Gate.CZ, i, state)
-
-  def simon(input: Rep[Array[Complex]]): Rep[Unit] = {
-    implicit val state = input
-    H(0)
-    H(1)
-    SWAP(0) // swap 0 and 1
-    CNOT(1) // CNOT(1, 2)
-    SWAP(2) // swap 2 and 3
-    CNOT(1) // CNOT(1, 2)
-    SWAP(0)
-    SWAP(1)
-    CNOT(2)
-    SWAP(1)
-    CNOT(1)
-    H(0)
-    H(1)
-  }
-
-  def snippet(input: Rep[Array[Complex]]): Rep[Unit] = {
-    implicit val state = input
-    // H(0)
-    // CNOT(0)
-    // S(0)
-    // T(0)
-    simon(input)
-  }
-
 }
 
 object TestStagedSchrodinger {
   def main(args: Array[String]): Unit = {
-    val driver = new StagedSchrodinger(List(), 4)
+    val driver = new StagedSchrodinger(4) {
+      def simon(input: Rep[Array[Complex]]): Rep[Unit] = {
+        implicit val state = input
+        H(0)
+        H(1)
+        SWAP(0) // swap 0 and 1
+        CNOT(1) // CNOT(1, 2)
+        SWAP(2) // swap 2 and 3
+        CNOT(1) // CNOT(1, 2)
+        SWAP(0)
+        SWAP(1)
+        CNOT(2)
+        SWAP(1)
+        CNOT(1)
+        H(0)
+        H(1)
+      }
+
+      def snippet(input: Rep[Array[Complex]]): Rep[Unit] = {
+        // H(0)
+        // CNOT(0)
+        // S(0)
+        // T(0)
+        simon(input)
+      }
+    }
     println(driver.code)
     driver.eval(Array())
   }

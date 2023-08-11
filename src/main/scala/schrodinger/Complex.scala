@@ -3,6 +3,8 @@ package quantum.schrodinger
 import java.text.DecimalFormat
 import Math.abs
 
+// Unstaged complex numbers
+
 case class Complex(re: Double, im: Double) {
   override def toString = s"{$re, $im}"
 
