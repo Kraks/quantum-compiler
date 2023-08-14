@@ -12,21 +12,20 @@ import lms.thirdparty.CCodeGenLibs
 
 import quantum._
 import quantum.circuit.Syntax._
-import quantum.schrodinger.Matrix
+import quantum.schrodinger._
 import quantum.schrodinger.Matrix._
-import quantum.schrodinger.Complex
 import quantum.schrodinger.gate.{Gate, _}
 
-abstract class StagedSchrodinger(size: Int) extends DslDriverCPP[Array[Complex], Unit] with ComplexOps { q =>
+abstract class StagedSchrodinger extends DslDriverCPP[Array[Complex], Array[Complex]] with ComplexOps with SchrodingerInterpreter { q =>
   override val codegen = new QCodeGen with CppCodeGen_Complex {
     registerHeader("<cmath>")
 
     val IR: q.type = q
-    override val initInput: String = s"""
-    |  Complex* input = (Complex*)malloc(${pow(2, size)} * sizeof(Complex));
+    override lazy val initInput: String = s"""
+    |  Complex* input = (Complex*) malloc(${pow(2, size)} * sizeof(Complex));
     |  input[0] = {1, 0};
     |""".stripMargin
-    override val procOutput: String = s"printResult(input, ${pow(2, size)});";
+    override lazy val procOutput: String = s"printResult(input, ${pow(2, size)});";
     override lazy val prelude = """
     |using namespace std::chrono;
     |typedef struct Complex { double re; double im; } Complex;
@@ -71,7 +70,7 @@ abstract class StagedSchrodinger(size: Int) extends DslDriverCPP[Array[Complex],
     val a = staticData(a0)
     for (i <- (0 until n): Range) {
       des(i) = 0.0
-      val sparse = false // a0(i).count(_ != (0: Complex)) < 0.5 * a0(i).size
+      val sparse = a0(i).count(_ != (0: Complex)) < 0.5 * a0(i).size
       // System.out.println(s"sparsity: ${a0(i).toList} $sparse")
       for (j <- unrollIf(sparse, 0 until a0(0).size)) {
         des(i) = des(i) + a(i).apply(j) * v(j)
@@ -86,9 +85,11 @@ abstract class StagedSchrodinger(size: Int) extends DslDriverCPP[Array[Complex],
     case "Complex" => sizeof("double") * 2
   }
 
+  type State = Rep[Array[Complex]]
   lazy val buf = NewArray[Complex](pow(2, size).toInt)
+  var state: State = _
 
-  def op(g: Gate, i: Int, state: Rep[Array[Complex]]): Unit = {
+  def op(g: Gate, i: Int): Unit = {
     val iLeft  = Matrix.identity(pow(2, i).toInt)
     val iRight = Matrix.identity(pow(2, size - i - g.arity).toInt)
     matVecProd(iLeft ⊗ g.m ⊗ iRight, state, buf)
@@ -96,22 +97,25 @@ abstract class StagedSchrodinger(size: Int) extends DslDriverCPP[Array[Complex],
     buf.copyToArray(state, 0, pow(2, size).toInt * sizeof("Complex"))
   }
 
-  def H(i: Int)(implicit state: Rep[Array[Complex]]): Unit     = op(Gate.H, i, state)
-  def SWAP(i: Int)(implicit state: Rep[Array[Complex]]): Unit  = op(Gate.SWAP, i, state)
-  def NOT(i: Int)(implicit state: Rep[Array[Complex]]): Unit   = op(Gate.NOT, i, state)
-  def CNOT(i: Int)(implicit state: Rep[Array[Complex]]): Unit  = op(Gate.CNOT, i, state)
-  def CCNOT(i: Int)(implicit state: Rep[Array[Complex]]): Unit = op(Gate.CCNOT, i, state)
-  def S(i: Int)(implicit state: Rep[Array[Complex]]): Unit     = op(Gate.S, i, state)
-  def T(i: Int)(implicit state: Rep[Array[Complex]]): Unit     = op(Gate.T, i, state)
-  def Z(i: Int)(implicit state: Rep[Array[Complex]]): Unit     = op(Gate.Z, i, state)
-  def CZ(i: Int)(implicit state: Rep[Array[Complex]]): Unit    = op(Gate.CZ, i, state)
+  def snippet(input: State): State = {
+    state = input
+    circuit
+    state
+  }
+
+  def evalCircuit: Unit = eval(scala.Array())
 }
 
 object TestStagedSchrodinger {
   def main(args: Array[String]): Unit = {
-    val driver = new StagedSchrodinger(4) {
-      def simon(input: Rep[Array[Complex]]): Rep[Unit] = {
-        implicit val state = input
+    val driver = new StagedSchrodinger {
+      val size = 4
+      def circuit: Unit = {
+        // H(0)
+        // CNOT(0)
+        // S(0)
+        // T(0)
+        // Simon's problem
         H(0)
         H(1)
         SWAP(0) // swap 0 and 1
@@ -126,16 +130,8 @@ object TestStagedSchrodinger {
         H(0)
         H(1)
       }
-
-      def snippet(input: Rep[Array[Complex]]): Rep[Unit] = {
-        // H(0)
-        // CNOT(0)
-        // S(0)
-        // T(0)
-        simon(input)
-      }
     }
     println(driver.code)
-    driver.eval(Array())
+    driver.evalCircuit
   }
 }

@@ -57,8 +57,8 @@ abstract class QCodeGen extends DslGenCPP {
   |}
   """.stripMargin
 
-  val initInput: String  = "int input[] = {1, 2, 3, 4, 5};"
-  val procOutput: String = "printArray(output, 5);";
+  lazy val initInput: String  = "int input[] = {1, 2, 3, 4, 5};"
+  lazy val procOutput: String = "printArray(output, 5);";
   def declareOutput(m: Manifest[_]): String = {
     if (remap(m) == "void") ""
     else s"${remap(m)} output = "

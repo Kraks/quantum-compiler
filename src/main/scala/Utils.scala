@@ -7,7 +7,7 @@ object Utils {
     val t1     = System.nanoTime()
     // val t = (t1 - t0) / 1000000.0 //to ms
     val t = (t1 - t0) / 1000000000.0 // to s
-    // println("Elapsed time: " + t + "ms")
+    println("Elapsed time: " + t + "s")
     (result, t)
   }
 }

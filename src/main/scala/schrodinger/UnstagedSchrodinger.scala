@@ -1,13 +1,24 @@
 package quantum.schrodinger
 
 import math.pow
+import quantum.utils._
 import quantum.schrodinger.gate._
 import quantum.schrodinger.Matrix._
 
 // Unstaged Schrodinger-style simulation
 
-class QState(var state: Array[Complex], size: Int) {
-  def setState(s: Array[Complex]) = {
+abstract class UnstagedSchrodinger(val size: Int) extends SchrodingerInterpreter {
+  type State = Array[Complex]
+  
+  var state: State = Matrix.zerosVec(pow(2, size).toInt)
+  state(0) = 1 // all deterministically zero
+
+  def evalCircuit: Unit = {
+    circuit
+    prettyPrintSummary
+  }
+
+  def setState(s: State) = {
     assert(state.size == s.size, "incompatible size");
     state = s
   }
@@ -22,15 +33,6 @@ class QState(var state: Array[Complex], size: Int) {
     state = iLeft ⊗ g.m ⊗ iRight * state
     // tiling, auto vec
   }
-  def H(i: Int): Unit     = op(Gate.H, i)
-  def SWAP(i: Int): Unit  = op(Gate.SWAP, i)
-  def NOT(i: Int): Unit   = op(Gate.NOT, i)
-  def CNOT(i: Int): Unit  = op(Gate.CNOT, i)
-  def CCNOT(i: Int): Unit = op(Gate.CCNOT, i)
-  def S(i: Int): Unit     = op(Gate.S, i)
-  def T(i: Int): Unit     = op(Gate.T, i)
-  def Z(i: Int): Unit     = op(Gate.Z, i)
-  def CZ(i: Int): Unit    = op(Gate.CZ, i)
 
   def summary: List[(String, Complex)] = {
     state.toList.zipWithIndex
@@ -48,10 +50,26 @@ class QState(var state: Array[Complex], size: Int) {
   }
 }
 
-object QState {
-  def apply(n: Int): QState = {
-    val s = Matrix.zerosVec(pow(2, n).toInt)
-    s(0) = 1 // all deterministically zero
-    new QState(s, n)
+object TestUnstagedSchrodinger {
+  def main(args: Array[String]): Unit = {
+    val q = new UnstagedSchrodinger(4) {
+      def circuit: Unit = {
+        H(0)
+        H(1)
+        SWAP(0) // swap 0 and 1
+        CNOT(1) // CNOT(1, 2)
+        SWAP(2) // swap 2 and 3
+        CNOT(1) // CNOT(1, 2)
+        SWAP(0)
+        SWAP(1)
+        CNOT(2)
+        SWAP(1)
+        CNOT(1)
+        H(0)
+        H(1)
+      }
+    }
+    Utils.time { q.evalCircuit }
+
   }
 }
