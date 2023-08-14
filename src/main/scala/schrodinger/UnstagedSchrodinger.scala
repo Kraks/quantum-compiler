@@ -69,7 +69,7 @@ object TestUnstagedSchrodinger {
         H(1)
       }
     }
-    Utils.time { q.evalCircuit }
 
+    Utils.time { q.evalCircuit }
   }
 }

@@ -40,7 +40,7 @@ object QuantumEvalCont {
 object TestQContSim {
   // Comparing the performance of QuantumEvalCont and QuantumEvalCPS
   def main(args: Array[String]): Unit = {
-    val N = 10000
+    val N = 1000
     val (_, t1) = Utils.time {
       for (i <- 0 to N) {
         QuantumEvalCont.runCircuit(simon, State(4))

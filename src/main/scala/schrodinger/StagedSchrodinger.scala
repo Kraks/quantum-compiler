@@ -53,6 +53,11 @@ abstract class StagedSchrodinger extends DslDriverCPP[Array[Complex], Array[Comp
     |  printf("]\n");
     |}
     """.stripMargin
+    override def traverse(n: Node): Unit = n match {
+      case n @ Node(s, "copy", List(from, to), _) =>
+        esln"$to = $from;"
+      case _ => super.traverse(n)
+    }
   }
   override val compilerCommand = "g++ -std=c++20 -O3"
   override val sourceFile      = "snippet.cpp"
@@ -70,7 +75,7 @@ abstract class StagedSchrodinger extends DslDriverCPP[Array[Complex], Array[Comp
     val a = staticData(a0)
     for (i <- (0 until n): Range) {
       des(i) = 0.0
-      val sparse = a0(i).count(_ != (0: Complex)) < 0.5 * a0(i).size
+      val sparse = false //a0(i).count(_ != (0: Complex)) < 0.5 * a0(i).size
       // System.out.println(s"sparsity: ${a0(i).toList} $sparse")
       for (j <- unrollIf(sparse, 0 until a0(0).size)) {
         des(i) = des(i) + a(i).apply(j) * v(j)
@@ -89,11 +94,12 @@ abstract class StagedSchrodinger extends DslDriverCPP[Array[Complex], Array[Comp
   lazy val buf = NewArray[Complex](pow(2, size).toInt)
   var state: State = _
 
+  @virtualize
   def op(g: Gate, i: Int): Unit = {
     val iLeft  = Matrix.identity(pow(2, i).toInt)
     val iRight = Matrix.identity(pow(2, size - i - g.arity).toInt)
     matVecProd(iLeft ⊗ g.m ⊗ iRight, state, buf)
-    // XXX: can we eliminate this copy?
+    // XXX: can we eliminate this copy? Could alternate buf and state
     buf.copyToArray(state, 0, pow(2, size).toInt * sizeof("Complex"))
   }
 

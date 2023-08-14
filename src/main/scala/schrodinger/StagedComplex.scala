@@ -45,7 +45,6 @@ trait ComplexOps { b: Dsl =>
 
 trait CppCodeGen_Complex extends ExtendedCPPCodeGen {
   override def remap(m: Manifest[_]): String = {
-    System.out.println(m.runtimeClass.getName)
     if (m.runtimeClass.getName.endsWith("Complex")) "Complex"
     else super.remap(m)
   }
