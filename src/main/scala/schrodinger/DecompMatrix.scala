@@ -36,11 +36,11 @@ trait DecompMatrix { q: Dsl =>
   abstract class AbsVec
 
   type State = Rep[AbsVec]
-  def mtState(size: Int): State =
+  def initState(size: Int): State =
     Wrap[AbsVec](Adapter.g.reflectWrite("init-state", Unwrap(unit(size)))(Adapter.CTRL))
 
   implicit class AbsVecOps(v: Rep[AbsVec]) {
-    def size: Int = v match {
+    def size: Int = Unwrap(v) match {
       case Adapter.g.Def(_, ops) =>
         val Backend.Const(n: Int) = ops.last
         n
@@ -89,10 +89,14 @@ trait DecompMatrix { q: Dsl =>
         val (m, n) = this.dim
         val (p, q) = y.dim
         y match {
-          case AtomMat(y) =>
-            // the kronecker product of two atom matrix is still an atom matrix (represented as opaque IR node)
-            val mat = Wrap[MElem](Adapter.g.reflect("kron", Unwrap(e), Unwrap(y), Unwrap(unit(m*p)), Unwrap(unit(q*n))))
-            AtomMat(mat)
+          case AtomMat(y) => Unwrap(y) match {
+            case Adapter.g.Def("zeros", SList(Backend.Const(p: Int), Backend.Const(q: Int))) =>
+              zeros(m*p, q*n)
+            case _ =>
+              // the kronecker product of two atom matrix is still an atom matrix (represented as opaque IR node)
+              val mat = Wrap[MElem](Adapter.g.reflect("kron", Unwrap(e), Unwrap(y), Unwrap(unit(m*p)), Unwrap(unit(q*n))))
+              AtomMat(mat)
+          }
           case DecomposedMat(m) => DecomposedMat(m.map { row => row.map(this ⊗ _) })
         }
     }
@@ -102,9 +106,10 @@ trait DecompMatrix { q: Dsl =>
       require(n == p, "dimension error")
       // result vector size m
       Unwrap(e) match {
-        case Adapter.g.Def("zeros", SList(Backend.Const(p: Int), Backend.Const(q: Int))) => ???
-        case Adapter.g.Def("id", SList(Backend.Const(h: Int))) => ???
-        case _ => ???
+        case Adapter.g.Def("zeros", SList(Backend.Const(p: Int), Backend.Const(q: Int))) =>
+          Wrap[AbsVec](Adapter.g.reflect("zeros_vec", Unwrap(unit(m))))
+        case Adapter.g.Def("id", SList(Backend.Const(h: Int))) => y
+        case _ => Wrap[AbsVec](Adapter.g.reflect("matvecprod", Unwrap(e), Unwrap(y), Unwrap(unit(m))))
       }
     }
   }
@@ -117,7 +122,24 @@ trait DecompMatrix { q: Dsl =>
         }
         rowAcc + row(0).dim._2
       }
-    def apply(i: Int, j: Int): Rep[T] = ???
+    def apply(i: Int, j: Int): Rep[T] = {
+      // Note(GW): This is not a very efficient "random access", some form of indexing would help.
+      def accessRow(m: List[List[AbsMat]], rowAcc: Int): (List[AbsMat], Int) = m match {
+        case Nil => (List(), rowAcc)
+        case r::rest =>
+          if (rowAcc <= i && i < rowAcc + r.head.dim._1) (r, rowAcc)
+          else accessRow(rest, rowAcc + r.head.dim._1)
+      }
+      def accessCol(r: List[AbsMat], colAcc: Int): (AbsMat, Int) = r match {
+        case Nil => throw new RuntimeException(s"Invalid index ($i, $j)")
+        case m::rest =>
+          if (colAcc <= j && j < colAcc + m.dim._2) (m, colAcc)
+          else accessCol(rest, colAcc + m.dim._2)
+      }
+      val (row, rowOffset) = accessRow(m, 0)
+      val (mat, colOffset) = accessCol(row, 0)
+      mat(i-rowOffset, j-colOffset)
+    }
     def dim: (Int, Int) = {
       val cols = m(0).foldLeft(0) { (acc, x) => acc + x.dim._1 }
       val rows = m.map(_.head).foldLeft(0) { (acc, x) => acc + x.dim._2 }
@@ -142,8 +164,8 @@ trait CppCodeGen_DecompMatrix extends ExtendedCPPCodeGen {
 
   override def shallow(n: Node): Unit = n match {
     case n @ Node(s, "kron", List(x, y, cols, rows), _) => es"$x ⊗ $y /* dim: ($cols, $rows) */"
-    case n @ Node(s, "matvecprod", List(x, y), _) => es"$x * $y"
-    case _                                       => super.shallow(n)
+    case n @ Node(s, "matvecprod", List(x, y, size), _) => es"$x * $y /* size: $size */"
+    case _                                              => super.shallow(n)
   }
 }
 
@@ -159,10 +181,13 @@ abstract class StagedDecomposedMat extends DslDriverCPP[Int, Unit] with DecompMa
       List(id(2), sqZeros(2)),
       List(sqZeros(2), id(2))))
     val m2 = rand(4, 4)
-    val m3 = m1 ⊗ m2 //⊗ m1
+    val m3 = m1 ⊗ m2 ⊗ m1
     m3.draw()
     //m1.draw()
-    println(id2(0, 0))
+    println((m2 ⊗ id2)(0, 0))
+
+    val v = zr2 * initState(2)
+    println(v)
     //(zr2 ⊗ m2).draw
     println("End")
   }
