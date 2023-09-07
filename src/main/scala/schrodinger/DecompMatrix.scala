@@ -51,14 +51,15 @@ trait DecompMatrix { q: Dsl =>
   // or a large matrix that can be decomposed to smaller AbsMats
   abstract class AbsMat {
     type T = Int // TODO: should generalize
-    def draw(indices: List[Int] = List()): Unit
+    def draw(offset: (Int, Int) = (0, 0)): Unit
     def apply(i: Int, j: Int): Rep[T]
     def dim: (Int, Int) /* (cols, rows) */ 
     def ⊗(y: AbsMat): AbsMat
     def *(y: Rep[AbsVec]): Rep[AbsVec]
   }
   case class AtomMat(e: Rep[MElem]) extends AbsMat {
-    def draw(indices: List[Int] = List()) = Adapter.g.reflectWrite("draw", Unwrap(e))(Adapter.CTRL)
+    def draw(offset: (Int, Int)) =
+      Adapter.g.reflectWrite("draw", Unwrap(e), Unwrap(unit(offset._1)), Unwrap(unit(offset._2)))(Adapter.CTRL)
     def apply(i: Int, j: Int): Rep[T] = Unwrap(e) match {
       case Adapter.g.Def("zeros", _) => unit(0)
       case Adapter.g.Def("id", _) => if (i == j) unit(1) else unit(0)
@@ -108,8 +109,14 @@ trait DecompMatrix { q: Dsl =>
     }
   }
   case class DecomposedMat(m: List[List[AbsMat]]) extends AbsMat {
-    def draw(indices: List[Int] = List()) =
-      m.zipWithIndex.foreach { case (row, nRow) => row.zipWithIndex.foreach { case (e, nCol) => e.draw() } }
+    def draw(offset: (Int, Int)) =
+      m.foldLeft(offset._2) { case (rowAcc, row) =>
+        row.foldLeft(offset._1) { case (colAcc, e) =>
+          e.draw((rowAcc, colAcc))
+          colAcc + e.dim._1
+        }
+        rowAcc + row(0).dim._2
+      }
     def apply(i: Int, j: Int): Rep[T] = ???
     def dim: (Int, Int) = {
       val cols = m(0).foldLeft(0) { (acc, x) => acc + x.dim._1 }
@@ -152,8 +159,10 @@ abstract class StagedDecomposedMat extends DslDriverCPP[Int, Unit] with DecompMa
       List(id(2), sqZeros(2)),
       List(sqZeros(2), id(2))))
     val m2 = rand(4, 4)
-    val m3 = m1 ⊗ m2 ⊗ m1
+    val m3 = m1 ⊗ m2 //⊗ m1
     m3.draw()
+    //m1.draw()
+    println(id2(0, 0))
     //(zr2 ⊗ m2).draw
     println("End")
   }
