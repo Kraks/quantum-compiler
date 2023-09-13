@@ -114,6 +114,7 @@ trait DecompMatrix { q: Dsl =>
     }
   }
   case class DecomposedMat(m: List[List[AbsMat]]) extends AbsMat {
+    // need additional indexing, generalizing CSR
     def draw(offset: (Int, Int)) =
       m.foldLeft(offset._2) { case (rowAcc, row) =>
         row.foldLeft(offset._1) { case (colAcc, e) =>
@@ -179,15 +180,23 @@ abstract class StagedDecomposedMat extends DslDriverCPP[Int, Unit] with DecompMa
     val zr2 = sqZeros(2)
     val m1 = DecomposedMat(List(
       List(id(2), sqZeros(2)),
-      List(sqZeros(2), id(2))))
+      List(sqZeros(2), id(2)))) // id(4)
     val m2 = rand(4, 4)
-    val m3 = m1 ⊗ m2 ⊗ m1
-    m3.draw()
+    /*
+    m2 z4 z4 z4
+    z4 m2 z4 z4
+          m2 z4
+             m2
+     */
+    val m3 = m1 ⊗ m2
+    // m3.regroup() // XXX: would be great/interesting to regourp the structure
+    val m4 = m3 ⊗ m1
+    m4.draw()
     //m1.draw()
-    println((m2 ⊗ id2)(0, 0))
+    //println((m2 ⊗ id2)(0, 0))
 
-    val v = zr2 * initState(2)
-    println(v)
+    //val v = zr2 * initState(2)
+    //println(v)
     //(zr2 ⊗ m2).draw
     println("End")
   }
