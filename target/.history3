@@ -1,0 +1,10 @@
+1684880065665:runMain quantum.TestQC
+1684880218973:exit
+1684880320280:runMain quantum.TestQC
+1684887515409:exit
+1684887608835:runMain quantum.TestQC
+1684887890245:runMain quantum.TestStagedSchrodinger
+1684887961446:runMain quantum.StagedSchrodinger.TestStagedSchrodinger
+1684887985349:run quantum.StagedSchrodinger.TestStagedSchrodinger
+1684888021140:ls
+1684888023972:exit

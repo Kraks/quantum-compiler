@@ -1,0 +1,5 @@
+project/target/
+target/
+*.log
+lms-clean
+sbt.json
