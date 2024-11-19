@@ -107,7 +107,7 @@ def print_result(arr, size):
     }
     override def traverse(n: Node): Unit = n match {
       case n @ Node(s, "copy", List(from, to), _) =>
-        esln"$to = $from;"
+        esln"$to = $from"
       case n @ Node(s,"P",List(x),_) => esln"print_result($x, 2 ** $size)"
       case _ => super.traverse(n)
     }
