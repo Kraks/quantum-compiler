@@ -45,7 +45,7 @@ abstract class DslDriverPy[A:Manifest,B:Manifest] extends DslSnippet[A,B] with D
 abstract class StagedHLSchrodinger extends DslDriverPy[Int, Unit] with SchrodingerInterpreter { q =>
   override val codegen = new DslGen {
     val IR: q.type = q
-    lazy val prelude = """
+    lazy val prelude = """import time
 import numpy as np
 from numpy import kron, matmul, array, eye, absolute, real, imag, log2, zeros, sqrt
 SWAP = array([
@@ -133,7 +133,9 @@ def print_result(arr, size):
       val (ms1, ms2) = (remap(m1), remap(m2))
       emitln(prelude)
       emitln("#############")
+      emitln("start_time = time.time()")
       quoteBlock(apply(ng))
+      emitln("print(\"--- %s seconds ---\" % (time.time() - start_time))")
     }
   }
 
